@@ -5,13 +5,14 @@
 
 void cg::renderer::rasterization_renderer::init()
 {
-	// TODO Lab: 1.06 Add depth buffer in `cg::renderer::rasterization_renderer`
 	rasterizer = std::make_shared<
 			cg::renderer::rasterizer<cg::vertex, cg::unsigned_color>>();
 	rasterizer->set_viewport(settings->width, settings->height);
 	render_target = std::make_shared<cg::resource<cg::unsigned_color>>(
 			settings->width, settings->height);
-	rasterizer->set_render_target(render_target);
+    depth_buffer = std::make_shared<cg::resource<float>>(
+            settings->width, settings->height);
+	rasterizer->set_render_target(render_target, depth_buffer);
 
 	model = std::make_shared<cg::world::model>();
 	model->load_obj(settings->model_path);
@@ -31,8 +32,6 @@ void cg::renderer::rasterization_renderer::init()
 }
 void cg::renderer::rasterization_renderer::render()
 {
-	// TODO Lab: 1.05 Implement `pixel_shader` lambda for the instance of `cg::renderer::rasterizer`
-
 	float4x4 matrix = mul(camera->get_projection_matrix(),
 						  camera->get_view_matrix(),
 						  model->get_world_matrix());
@@ -40,6 +39,10 @@ void cg::renderer::rasterization_renderer::render()
 		auto processed = mul(matrix, vertex);
 		return std::make_pair(processed, data);
 	};
+    rasterizer->pixel_shader = [](cg::vertex data, float z) {
+		return cg::color{data.ar, data.ab, data.ag};
+	};
+
 
     auto start = std::chrono::high_resolution_clock::now();
 
