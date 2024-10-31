@@ -237,6 +237,9 @@ namespace cg::renderer
             if (payload.t > min_t && payload.t < closest_hit_payload.t) {
                 closest_hit_payload = payload;
                 closest_triangle = &triangle;
+                if (any_hit_shader) {
+                    return any_hit_shader(ray, payload, triangle);
+                }
             }
         }
 
@@ -246,7 +249,6 @@ namespace cg::renderer
             }
         }
 
-        // TODO Lab: 2.04 Adjust `trace_ray` method of `raytracer` to use `any_hit_shader`
 		// TODO Lab: 2.05 Adjust `trace_ray` method of `raytracer` class to traverse the acceleration structure
 		return miss_shader(ray);
 	}
